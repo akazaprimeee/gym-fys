@@ -1,0 +1,954 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Gimnasio Fuerza y Salud - App Móvil</title>
+  
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="assets/logo.png">
+  
+  <!-- Google Fonts: Montserrat & Outfit -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,700&family=Outfit:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  
+  <!-- Font Awesome 6 Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#f0f7ff',
+              100: '#e0effe',
+              200: '#bae0fd',
+              300: '#7cc5fb',
+              400: '#38a5f8',
+              500: '#1488f0', // Primary Gym Blue
+              600: '#066cd6',
+              700: '#0755ad',
+              800: '#0b488e',
+              900: '#0f3d75',
+              glow: '#00d2ff'
+            },
+            dark: {
+              base: '#070b14',
+              surface: '#0f172a',
+              card: '#162036',
+              border: '#1e2e4d',
+              highlight: '#24365a'
+            }
+          },
+          fontFamily: {
+            sans: ['Outfit', 'Montserrat', 'sans-serif'],
+            display: ['Montserrat', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace']
+          }
+        }
+      }
+    }
+  </script>
+  
+  <!-- QRCode.js Library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <!-- HTML5-QRCode Scanner Library -->
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+
+  <!-- Custom Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen antialiased flex flex-col items-center justify-start sm:p-4 select-none">
+
+  <!-- Desktop Device Wrapper Bar (Controls for view size & simulation) -->
+  <header class="w-full max-w-5xl py-2 px-4 flex flex-wrap items-center justify-between gap-3 text-xs text-slate-400 border-b border-slate-800/80 mb-2">
+    <div class="flex items-center gap-2">
+      <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+      <span class="font-semibold text-slate-200">Gimnasio Fuerza y Salud</span>
+      <span class="hidden sm:inline text-slate-500">| App Móvil Oficial (Piura)</span>
+    </div>
+
+    <div class="flex items-center gap-2">
+      <!-- Quick View Switcher button in top bar -->
+      <button id="topToggleRoleBtn" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-brand-500/15 border border-brand-500/30 text-brand-400 hover:bg-brand-500/25 transition-all font-medium">
+        <i class="fa-solid fa-repeat text-[11px]"></i>
+        <span id="topToggleRoleText">Alternar: Vista Admin</span>
+      </button>
+
+      <!-- Frame Toggle (Mobile Frame vs Full Screen) -->
+      <button id="toggleFrameBtn" class="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition-all">
+        <i class="fa-solid fa-mobile-screen"></i>
+        <span id="frameToggleText">Vista Enmarcada</span>
+      </button>
+
+      <!-- Sound Toggle -->
+      <button id="toggleSoundBtn" class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition-all" title="Activar/Desactivar Sonido">
+        <i class="fa-solid fa-volume-high text-emerald-400" id="soundIcon"></i>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Container / Phone Mockup Frame -->
+  <main id="appContainer" class="phone-frame w-full max-w-[430px] min-h-[844px] bg-dark-base sm:rounded-[44px] shadow-2xl sm:border-[8px] sm:border-slate-800/90 relative flex flex-col overflow-hidden sm:ring-1 sm:ring-white/10 transition-all duration-300">
+    
+    <!-- iPhone-style Dynamic Island / Notch (Only in framed view) -->
+    <div id="phoneNotch" class="phone-notch w-28 h-6 bg-black rounded-full mx-auto mt-2 mb-1 flex items-center justify-between px-2.5 z-50">
+      <div class="w-2 h-2 rounded-full bg-slate-900 border border-slate-800"></div>
+      <div class="w-1.5 h-1.5 rounded-full bg-emerald-500/80 animate-ping"></div>
+      <div class="w-3 h-3 rounded-full bg-slate-900 border border-slate-800"></div>
+    </div>
+
+    <!-- Live Status Bar -->
+    <div class="px-6 py-1 flex items-center justify-between text-[11px] font-semibold text-slate-400 z-40 select-none">
+      <span id="statusBarClock" class="font-mono text-slate-200">12:00</span>
+      <div class="flex items-center gap-1.5 text-[10px]">
+        <i class="fa-solid fa-signal text-[9px]"></i>
+        <i class="fa-solid fa-wifi text-[9px]"></i>
+        <i class="fa-solid fa-battery-three-quarters text-emerald-400 text-xs"></i>
+      </div>
+    </div>
+
+    <!-- App Header & Navigation Bar -->
+    <nav class="px-4 py-2 flex items-center justify-between border-b border-slate-800/60 bg-dark-surface/90 backdrop-blur-md sticky top-0 z-40">
+      <div class="flex items-center gap-2.5">
+        <img src="assets/logo.png" alt="Gym F&S Logo" class="w-9 h-9 object-contain drop-shadow-[0_0_8px_rgba(56,165,248,0.4)]">
+        <div>
+          <h1 class="text-sm font-black tracking-wide font-display text-white leading-tight">GYM FUERZA Y SALUD</h1>
+          <p id="appHeaderSubtitle" class="text-[10px] font-semibold text-brand-400 uppercase tracking-wider">Portal de Socios</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-1.5">
+        <!-- Floating Role Switcher Pill -->
+        <button id="switchRoleNavBtn" class="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold tracking-tight bg-gradient-to-r from-brand-600 to-brand-500 text-white shadow-lg shadow-brand-500/20 active:scale-95 transition-all">
+          <i class="fa-solid fa-shuffle text-[10px]"></i>
+          <span id="switchRoleNavText">A Recepción</span>
+        </button>
+
+        <!-- Logout Button -->
+        <button id="logoutBtn" class="w-8 h-8 rounded-full bg-slate-800/80 hover:bg-red-500/20 text-slate-300 hover:text-red-400 flex items-center justify-center transition-all" title="Cerrar Sesión">
+          <i class="fa-solid fa-arrow-right-from-bracket text-xs"></i>
+        </button>
+      </div>
+    </nav>
+
+    <!-- Content Screen Scroller -->
+    <div id="contentScroller" class="flex-1 overflow-y-auto overflow-x-hidden relative pb-10">
+
+      <!-- ============================================== -->
+      <!-- VIEW 0: LOGIN SCREEN (DNI & PASSWORD)           -->
+      <!-- ============================================== -->
+      <section id="loginView" class="view-panel hidden min-h-full px-5 py-6 flex flex-col justify-between">
+        <div class="flex flex-col items-center text-center mt-2">
+          <!-- Big Logo with Glow Effect -->
+          <div class="relative group my-2">
+            <div class="absolute -inset-2 bg-gradient-to-r from-brand-500 to-cyan-400 rounded-full blur-xl opacity-40 group-hover:opacity-75 transition duration-500"></div>
+            <img src="assets/logo.png" alt="Gimnasio Fuerza y Salud" class="relative w-28 h-28 object-contain drop-shadow-2xl">
+          </div>
+          <h2 class="text-2xl font-black font-display tracking-tight text-white mt-1">FUERZA Y SALUD</h2>
+          <p class="text-xs text-brand-400 font-semibold tracking-widest uppercase">Gimnasio & Fitness • Piura</p>
+          <p class="text-xs text-slate-400 mt-2 max-w-[280px]">Ingresa con tu documento de identidad para acceder a tu carnet y código de acceso.</p>
+        </div>
+
+        <!-- Login Form -->
+        <form id="loginForm" class="mt-6 space-y-4 bg-dark-card/60 border border-dark-border p-5 rounded-3xl backdrop-blur-sm shadow-xl">
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1.5 flex items-center gap-1.5">
+              <i class="fa-regular fa-id-card text-brand-400"></i> Número de DNI
+            </label>
+            <div class="relative">
+              <input type="text" id="loginDni" maxlength="8" placeholder="Ingresa tus 8 dígitos" required
+                     class="w-full bg-dark-surface/90 border border-slate-700/80 rounded-2xl py-3 px-4 text-sm font-mono tracking-wider text-white placeholder-slate-500 focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 transition-all">
+              <span class="absolute right-3.5 top-3.5 text-xs text-slate-500 font-mono">DNI</span>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1.5 flex items-center gap-1.5">
+              <i class="fa-solid fa-lock text-brand-400"></i> Contraseña
+            </label>
+            <div class="relative">
+              <input type="password" id="loginPassword" placeholder="••••••••" required
+                     class="w-full bg-dark-surface/90 border border-slate-700/80 rounded-2xl py-3 px-4 pr-11 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 transition-all">
+              <button type="button" id="togglePasswordVisibility" class="absolute right-3.5 top-3.5 text-slate-400 hover:text-white transition-colors">
+                <i class="fa-regular fa-eye" id="passEyeIcon"></i>
+              </button>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-between text-xs text-slate-400 pt-1">
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input type="checkbox" id="rememberMe" checked class="rounded border-slate-700 bg-slate-800 text-brand-500 focus:ring-brand-500/30">
+              <span>Recordar datos</span>
+            </label>
+            <a href="#" id="forgotPassLink" class="text-brand-400 hover:underline">¿Olvidaste clave?</a>
+          </div>
+
+          <button type="submit" class="w-full py-3.5 px-4 rounded-2xl bg-gradient-to-r from-brand-600 via-brand-500 to-cyan-500 text-white font-bold text-sm tracking-wide shadow-lg shadow-brand-500/30 hover:shadow-brand-500/50 active:scale-[0.98] transition-all flex items-center justify-center gap-2">
+            <span>INGRESAR A LA APP</span>
+            <i class="fa-solid fa-arrow-right text-xs"></i>
+          </button>
+        </form>
+
+        <!-- Demo Accounts Quick Access -->
+        <div class="mt-5 space-y-2">
+          <p class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider text-center">Acceso Rápido de Prueba (Demo)</p>
+          <div class="grid grid-cols-2 gap-2 text-xs">
+            <button type="button" onclick="quickFillLogin('71234567', '123456')" class="p-2.5 rounded-xl bg-slate-900/90 border border-emerald-500/30 hover:border-emerald-500/60 text-left transition-all">
+              <div class="flex items-center gap-1.5 text-emerald-400 font-bold text-[11px]">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Carlos (Activo)
+              </div>
+              <div class="text-[10px] text-slate-400 font-mono">DNI: 71234567</div>
+            </button>
+
+            <button type="button" onclick="quickFillLogin('74561234', '123456')" class="p-2.5 rounded-xl bg-slate-900/90 border border-amber-500/30 hover:border-amber-500/60 text-left transition-all">
+              <div class="flex items-center gap-1.5 text-amber-400 font-bold text-[11px]">
+                <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span> Valeria (Por Vencer)
+              </div>
+              <div class="text-[10px] text-slate-400 font-mono">DNI: 74561234</div>
+            </button>
+
+            <button type="button" onclick="quickFillLogin('45892134', '123456')" class="p-2.5 rounded-xl bg-slate-900/90 border border-red-500/30 hover:border-red-500/60 text-left transition-all">
+              <div class="flex items-center gap-1.5 text-red-400 font-bold text-[11px]">
+                <span class="w-1.5 h-1.5 rounded-full bg-red-400"></span> Roberto (Vencido)
+              </div>
+              <div class="text-[10px] text-slate-400 font-mono">DNI: 45892134</div>
+            </button>
+
+            <button type="button" onclick="quickFillLogin('88888888', 'admin123')" class="p-2.5 rounded-xl bg-slate-900/90 border border-brand-500/40 hover:border-brand-500/80 text-left transition-all bg-brand-500/5">
+              <div class="flex items-center gap-1.5 text-brand-400 font-bold text-[11px]">
+                <i class="fa-solid fa-shield-halved text-[10px]"></i> Recepcionista
+              </div>
+              <div class="text-[10px] text-slate-400 font-mono">DNI: 88888888</div>
+            </button>
+          </div>
+        </div>
+
+        <!-- Social & Maps Links in Login -->
+        <div class="mt-6 pt-4 border-t border-slate-800/80 text-center">
+          <p class="text-[10px] text-slate-400 mb-2">Conéctate con Gimnasio Fuerza y Salud</p>
+          <div class="flex items-center justify-center gap-3">
+            <a href="https://maps.app.goo.gl/7U4esPttLkjqku6f7" target="_blank" class="w-9 h-9 rounded-full bg-slate-800/80 hover:bg-emerald-500/20 text-emerald-400 flex items-center justify-center transition-all" title="Ver ubicación en Google Maps">
+              <i class="fa-solid fa-location-dot"></i>
+            </a>
+            <a href="https://www.instagram.com/gimnasiofys/" target="_blank" class="w-9 h-9 rounded-full bg-slate-800/80 hover:bg-pink-500/20 text-pink-400 flex items-center justify-center transition-all" title="Instagram Oficial">
+              <i class="fa-brands fa-instagram"></i>
+            </a>
+            <a href="https://www.tiktok.com/@gymfuerzaysaludpiura?lang=es" target="_blank" class="w-9 h-9 rounded-full bg-slate-800/80 hover:bg-cyan-500/20 text-cyan-300 flex items-center justify-center transition-all" title="TikTok Oficial">
+              <i class="fa-brands fa-tiktok"></i>
+            </a>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================== -->
+      <!-- VIEW 1: VISTA DE CLIENTE (SOCIO)               -->
+      <!-- ============================================== -->
+      <section id="clientView" class="view-panel space-y-4 px-4 py-3">
+
+        <!-- Member Profile Header Card -->
+        <div class="bg-gradient-to-br from-dark-card to-dark-surface border border-dark-border rounded-3xl p-4 shadow-xl relative overflow-hidden">
+          <div class="absolute -right-6 -bottom-6 w-32 h-32 bg-brand-500/10 rounded-full blur-2xl pointer-events-none"></div>
+          
+          <div class="flex items-center gap-3.5 relative z-10">
+            <div class="relative">
+              <img id="clientAvatar" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&h=200&q=80" 
+                   alt="Foto Socio" class="w-14 h-14 rounded-2xl object-cover border-2 border-brand-400 shadow-lg">
+              <span id="clientStatusBadgeDot" class="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-emerald-500 border-2 border-dark-card flex items-center justify-center">
+                <i class="fa-solid fa-check text-[8px] text-white"></i>
+              </span>
+            </div>
+
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-2">
+                <h3 id="clientName" class="text-base font-bold font-display text-white truncate">Carlos Mendoza</h3>
+                <span id="clientPlanBadge" class="px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wide bg-brand-500/20 border border-brand-500/40 text-brand-300">VIP</span>
+              </div>
+              <p class="text-xs text-slate-400 font-mono mt-0.5">DNI: <span id="clientDni" class="text-slate-200">71234567</span> • Socio #<span id="clientCode">FS-0842</span></p>
+              <div class="flex items-center gap-2 mt-1 text-[11px] text-slate-400">
+                <span class="inline-flex items-center gap-1 text-emerald-400 font-semibold">
+                  <i class="fa-solid fa-circle-check text-[10px]"></i> Socio Verificado
+                </span>
+                <span>•</span>
+                <span>Sede Piura</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Membership Status Highlight Card -->
+        <div id="membershipCard" class="membership-card p-4 rounded-3xl border relative overflow-hidden shadow-xl transition-all">
+          <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center gap-2">
+              <span class="w-8 h-8 rounded-xl bg-white/10 flex items-center justify-center text-white">
+                <i class="fa-solid fa-dumbbell"></i>
+              </span>
+              <div>
+                <p class="text-[10px] font-semibold text-slate-300 uppercase tracking-wider">Estado de Membresía</p>
+                <h4 id="membershipPlanName" class="text-sm font-bold text-white">Plan Trimestral Pro</h4>
+              </div>
+            </div>
+            <span id="membershipStatusPill" class="px-3 py-1 rounded-full text-xs font-black tracking-wide uppercase bg-emerald-500 text-slate-950 shadow-md flex items-center gap-1.5">
+              <i class="fa-solid fa-circle-check text-[11px]"></i> ACTIVA
+            </span>
+          </div>
+
+          <!-- Expiration and Progress -->
+          <div class="bg-black/30 rounded-2xl p-3 border border-white/5 space-y-2">
+            <div class="flex items-center justify-between text-xs">
+              <span class="text-slate-300 flex items-center gap-1.5">
+                <i class="fa-regular fa-calendar text-brand-300"></i> Vence el:
+              </span>
+              <span id="membershipExpireDate" class="font-bold font-mono text-white">28 de Diciembre, 2026</span>
+            </div>
+
+            <div class="w-full bg-slate-800/80 rounded-full h-2 overflow-hidden">
+              <div id="membershipProgressBar" class="bg-gradient-to-r from-emerald-400 to-brand-400 h-2 rounded-full transition-all duration-500" style="width: 78%;"></div>
+            </div>
+
+            <div class="flex items-center justify-between text-[11px] text-slate-400">
+              <span id="membershipDaysLeft" class="text-emerald-400 font-semibold">42 días restantes</span>
+              <button onclick="openRenewModal()" class="text-brand-300 hover:text-white underline font-semibold flex items-center gap-1">
+                <span>Renovar / Pagar</span>
+                <i class="fa-solid fa-angle-right text-[10px]"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ============================================== -->
+        <!-- SELECTOR: CARNET DIGITAL VS CÓDIGO QR DINÁMICO -->
+        <!-- ============================================== -->
+        <div class="space-y-3">
+          <!-- Segmented Control Selector -->
+          <div class="bg-dark-surface/90 border border-dark-border p-1 rounded-2xl flex items-center shadow-inner">
+            <button id="selectCarnetTab" onclick="switchClientTab('carnet')" class="client-tab-btn flex-1 py-2.5 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 bg-gradient-to-r from-brand-600 to-brand-500 text-white shadow-md">
+              <i class="fa-solid fa-id-card"></i>
+              <span>Carnet Digital</span>
+            </button>
+            <button id="selectQrTab" onclick="switchClientTab('qr')" class="client-tab-btn flex-1 py-2.5 px-3 rounded-xl text-xs font-bold text-slate-400 hover:text-white transition-all flex items-center justify-center gap-2">
+              <i class="fa-solid fa-qrcode"></i>
+              <span>Código QR Dinámico</span>
+            </button>
+          </div>
+
+          <!-- OPTION A: CARNET DIGITAL CON SEGUNDERO EN TIEMPO REAL -->
+          <div id="carnetContainer" class="tab-content transition-all duration-300">
+            <!-- Digital ID Card (Sleek Holographic Style) -->
+            <div class="carnet-card relative rounded-3xl overflow-hidden border border-brand-400/30 p-5 shadow-2xl bg-gradient-to-b from-[#111c38] via-[#0d162d] to-[#070b16]">
+              
+              <!-- Subtle Holographic Shimmer Overlay -->
+              <div class="carnet-hologram pointer-events-none"></div>
+
+              <!-- Top Row: Gym Brand & Chip -->
+              <div class="flex items-center justify-between relative z-10 border-b border-white/10 pb-3">
+                <div class="flex items-center gap-2">
+                  <img src="assets/logo.png" alt="Gym F&S" class="w-10 h-10 object-contain drop-shadow-[0_0_6px_rgba(56,165,248,0.5)]">
+                  <div>
+                    <h5 class="text-xs font-black tracking-wider text-white font-display">GIMNASIO FUERZA Y SALUD</h5>
+                    <p class="text-[9px] text-brand-400 font-semibold tracking-widest uppercase">Carnet Oficial de Socio</p>
+                  </div>
+                </div>
+                
+                <!-- Decorative NFC/Sim Chip -->
+                <div class="w-8 h-6 rounded bg-gradient-to-tr from-amber-400 to-yellow-200 border border-amber-300/80 shadow-sm flex items-center justify-center opacity-85">
+                  <div class="w-5 h-4 border border-amber-800/40 rounded-sm"></div>
+                </div>
+              </div>
+
+              <!-- Middle: Member Details & Photo -->
+              <div class="flex items-center gap-4 my-4 relative z-10">
+                <div class="relative">
+                  <img id="carnetPhoto" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=240&h=240&q=80" 
+                       alt="Foto Carnet" class="w-20 h-24 rounded-2xl object-cover border-2 border-brand-400/80 shadow-xl">
+                  <div class="absolute -bottom-2 -right-1 px-1.5 py-0.5 rounded-md bg-brand-500 text-[8px] font-black text-white uppercase shadow">
+                    PRO
+                  </div>
+                </div>
+
+                <div class="space-y-1.5 flex-1 min-w-0">
+                  <div>
+                    <p class="text-[9px] uppercase tracking-wider text-slate-400 font-semibold">Socio Titular</p>
+                    <p id="carnetFullName" class="text-sm font-black text-white truncate font-display">Carlos Mendoza Castro</p>
+                  </div>
+
+                  <div class="grid grid-cols-2 gap-2 text-xs">
+                    <div>
+                      <p class="text-[9px] uppercase tracking-wider text-slate-400">N° DNI</p>
+                      <p id="carnetDniText" class="font-mono font-bold text-slate-200">71234567</p>
+                    </div>
+                    <div>
+                      <p class="text-[9px] uppercase tracking-wider text-slate-400">ID Socio</p>
+                      <p id="carnetIdCode" class="font-mono font-bold text-brand-300">FS-0842</p>
+                    </div>
+                  </div>
+
+                  <div class="grid grid-cols-2 gap-2 text-xs">
+                    <div>
+                      <p class="text-[9px] uppercase tracking-wider text-slate-400">Membresía</p>
+                      <p id="carnetPlanText" class="font-semibold text-emerald-400 text-[11px] truncate">Trimestral VIP</p>
+                    </div>
+                    <div>
+                      <p class="text-[9px] uppercase tracking-wider text-slate-400">Vigencia</p>
+                      <p id="carnetVigenciaText" class="font-mono font-bold text-slate-200 text-[11px]">28/12/2026</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- ============================================== -->
+              <!-- SEGUNDERO EN TIEMPO REAL (ANTI-FRAUDE/CAPTURA) -->
+              <!-- ============================================== -->
+              <div class="relative z-10 bg-slate-950/80 rounded-2xl p-3 border border-brand-500/40 shadow-inner">
+                <div class="flex items-center justify-between mb-1.5">
+                  <span class="text-[9px] font-extrabold uppercase tracking-widest text-brand-400 flex items-center gap-1.5">
+                    <span class="w-2 h-2 rounded-full bg-red-500 animate-ping"></span>
+                    VERIFICACIÓN EN TIEMPO REAL
+                  </span>
+                  <span id="carnetLiveDate" class="text-[10px] text-slate-400 font-mono">16 Nov 2026</span>
+                </div>
+
+                <!-- Clock Display with Live Ticking Seconds -->
+                <div class="flex items-baseline justify-center gap-1 font-mono">
+                  <span id="carnetHourMin" class="text-2xl font-black text-white tracking-wider">14:32</span>
+                  <span class="text-2xl font-black text-brand-400">:</span>
+                  <div class="relative inline-flex items-center justify-center bg-brand-500/20 border border-brand-500/50 px-2.5 py-0.5 rounded-lg">
+                    <span id="carnetSeconds" class="text-2xl font-black text-brand-300 animate-pulse">45</span>
+                  </div>
+                  <span id="carnetAmPm" class="text-xs font-bold text-slate-400 ml-1">PM</span>
+                </div>
+
+                <!-- Fast Milliseconds Pulse Line (Proves Live Rendering, Not Static Screenshot) -->
+                <div class="w-full bg-slate-800 rounded-full h-1.5 mt-2.5 overflow-hidden">
+                  <div id="liveMillisecondBar" class="h-1.5 rounded-full bg-gradient-to-r from-brand-500 via-cyan-400 to-emerald-400 transition-all duration-75" style="width: 50%;"></div>
+                </div>
+                
+                <p class="text-[9px] text-center text-slate-400 mt-1.5 flex items-center justify-center gap-1">
+                  <i class="fa-solid fa-shield-halved text-brand-400 text-[10px]"></i>
+                  Segundero dinámico activo para validación de acceso presencial
+                </p>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- OPTION B: CÓDIGO QR DINÁMICO -->
+          <div id="qrContainer" class="tab-content hidden transition-all duration-300">
+            <div class="bg-gradient-to-b from-dark-card to-dark-surface rounded-3xl border border-dark-border p-5 text-center shadow-xl space-y-4">
+              
+              <div>
+                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-brand-500/15 border border-brand-500/30 text-brand-300">
+                  <i class="fa-solid fa-arrows-rotate animate-spin text-[10px]"></i> CÓDIGO DINÁMICO
+                </span>
+                <h4 class="text-base font-bold text-white mt-1.5">Escanea tu acceso en torniquete</h4>
+                <p class="text-xs text-slate-400">Presenta este código al lector óptico o recepcionista.</p>
+              </div>
+
+              <!-- Dynamic QR Display Wrapper -->
+              <div class="relative inline-block mx-auto p-4 bg-white rounded-3xl shadow-2xl border-4 border-brand-500/30 group">
+                <div id="qrcodeCanvas" class="w-[180px] h-[180px] flex items-center justify-center"></div>
+                <!-- Mini Logo Overlay in Center of QR -->
+                <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+                  <div class="w-10 h-10 rounded-xl bg-slate-950 p-1 shadow-lg border border-brand-500/60 flex items-center justify-center">
+                    <img src="assets/logo.png" alt="FS" class="w-8 h-8 object-contain">
+                  </div>
+                </div>
+              </div>
+
+              <!-- Dynamic Countdown Timer for Refresh -->
+              <div class="bg-dark-surface/90 border border-slate-800 rounded-2xl p-3 space-y-2">
+                <div class="flex items-center justify-between text-xs">
+                  <span class="text-slate-400 flex items-center gap-1.5">
+                    <i class="fa-regular fa-clock text-brand-400"></i> Se actualiza en:
+                  </span>
+                  <span id="qrCountdownText" class="font-mono font-bold text-brand-300">18 segundos</span>
+                </div>
+
+                <!-- Timer Progress Line -->
+                <div class="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden">
+                  <div id="qrCountdownBar" class="bg-brand-500 h-1.5 rounded-full transition-all duration-1000" style="width: 90%;"></div>
+                </div>
+
+                <div class="flex items-center justify-between pt-1">
+                  <span id="qrTokenPreview" class="text-[9px] font-mono text-slate-500 truncate max-w-[190px]">TOKEN: FYS-71234567-9X2</span>
+                  <button onclick="regenerateDynamicQr(true)" class="text-xs font-semibold text-brand-400 hover:text-brand-300 flex items-center gap-1">
+                    <i class="fa-solid fa-rotate-right text-[10px]"></i> Renovar ya
+                  </button>
+                </div>
+              </div>
+
+              <div class="p-2.5 rounded-xl bg-brand-500/10 border border-brand-500/20 text-slate-300 text-[11px] flex items-start gap-2 text-left">
+                <i class="fa-solid fa-circle-info text-brand-400 mt-0.5 text-xs"></i>
+                <span>Por tu seguridad, este código se regenera continuamente. No utilices capturas de pantalla fijas.</span>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+        <!-- Location & Socials Card (Explicit Requirements) -->
+        <div class="bg-dark-card/90 border border-dark-border rounded-3xl p-4 shadow-xl space-y-3">
+          <div class="flex items-center justify-between">
+            <h4 class="text-xs font-extrabold uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
+              <i class="fa-solid fa-map-location-dot text-brand-400"></i> Sede y Contacto Oficial
+            </h4>
+            <span class="text-[10px] text-emerald-400 font-semibold flex items-center gap-1">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Abierto Hoy
+            </span>
+          </div>
+
+          <!-- Google Maps Direct Card -->
+          <a href="https://maps.app.goo.gl/7U4esPttLkjqku6f7" target="_blank" 
+             class="group block p-3 rounded-2xl bg-gradient-to-r from-dark-surface to-slate-900 border border-slate-700/60 hover:border-brand-500/60 transition-all shadow-md">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 flex items-center justify-center text-lg group-hover:scale-105 transition-transform">
+                  <i class="fa-solid fa-location-dot"></i>
+                </div>
+                <div>
+                  <p class="text-xs font-bold text-white group-hover:text-brand-300 transition-colors">Gimnasio Fuerza y Salud</p>
+                  <p class="text-[10px] text-slate-400">Piura, Perú • Ver en Google Maps</p>
+                </div>
+              </div>
+              <span class="px-2.5 py-1 rounded-lg bg-emerald-500/20 text-emerald-300 text-[10px] font-bold flex items-center gap-1">
+                <span>Cómo llegar</span>
+                <i class="fa-solid fa-arrow-up-right-from-square text-[9px]"></i>
+              </span>
+            </div>
+          </a>
+
+          <!-- Social Networks Grid -->
+          <div class="grid grid-cols-2 gap-2 pt-1">
+            <!-- Instagram -->
+            <a href="https://www.instagram.com/gimnasiofys/" target="_blank" 
+               class="p-2.5 rounded-2xl bg-gradient-to-br from-pink-500/10 to-purple-500/10 border border-pink-500/25 hover:border-pink-500/60 transition-all flex items-center gap-2.5 group">
+              <div class="w-8 h-8 rounded-xl bg-pink-500/20 text-pink-400 flex items-center justify-center text-base group-hover:scale-110 transition-transform">
+                <i class="fa-brands fa-instagram"></i>
+              </div>
+              <div class="min-w-0">
+                <p class="text-[11px] font-bold text-white group-hover:text-pink-300 truncate">@gimnasiofys</p>
+                <p class="text-[9px] text-slate-400">Instagram</p>
+              </div>
+            </a>
+
+            <!-- TikTok -->
+            <a href="https://www.tiktok.com/@gymfuerzaysaludpiura?lang=es" target="_blank" 
+               class="p-2.5 rounded-2xl bg-gradient-to-br from-cyan-500/10 to-slate-900 border border-cyan-500/25 hover:border-cyan-500/60 transition-all flex items-center gap-2.5 group">
+              <div class="w-8 h-8 rounded-xl bg-cyan-500/20 text-cyan-300 flex items-center justify-center text-base group-hover:scale-110 transition-transform">
+                <i class="fa-brands fa-tiktok"></i>
+              </div>
+              <div class="min-w-0">
+                <p class="text-[11px] font-bold text-white group-hover:text-cyan-200 truncate">@gymfuerzaysalud</p>
+                <p class="text-[9px] text-slate-400">TikTok Piura</p>
+              </div>
+            </a>
+          </div>
+
+          <!-- Schedule & Info -->
+          <div class="p-2.5 rounded-xl bg-slate-900/60 border border-slate-800 text-[10px] text-slate-400 flex items-center justify-between">
+            <span class="flex items-center gap-1.5">
+              <i class="fa-regular fa-clock text-brand-400"></i> Horario: Lun - Sáb: 6:00 AM - 10:00 PM
+            </span>
+            <span class="text-slate-300 font-semibold">Dom: 8am - 1pm</span>
+          </div>
+        </div>
+
+      </section>
+
+
+      <!-- ============================================== -->
+      <!-- VIEW 2: VISTA DE ADMIN (RECEPCIONISTA)          -->
+      <!-- ============================================== -->
+      <section id="adminView" class="view-panel hidden space-y-4 px-4 py-3">
+
+        <!-- Receptionist Top Card -->
+        <div class="bg-gradient-to-r from-brand-900/60 via-dark-surface to-dark-card border border-brand-500/30 rounded-3xl p-4 shadow-xl relative overflow-hidden">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="w-11 h-11 rounded-2xl bg-brand-500/20 border border-brand-400 flex items-center justify-center text-brand-300 text-lg shadow-inner">
+                <i class="fa-solid fa-user-shield"></i>
+              </div>
+              <div>
+                <div class="flex items-center gap-2">
+                  <h3 class="text-sm font-bold text-white font-display">Panel de Recepción</h3>
+                  <span class="px-2 py-0.5 rounded-full text-[9px] font-black uppercase bg-emerald-500/20 border border-emerald-500/40 text-emerald-300">EN TURNO</span>
+                </div>
+                <p class="text-xs text-slate-400">Recepcionista: <span id="adminNameDisplay" class="text-slate-200 font-semibold">Juan Pérez</span></p>
+              </div>
+            </div>
+            
+            <button onclick="toggleViewMode('client')" class="px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold flex items-center gap-1.5 transition-all">
+              <i class="fa-solid fa-arrow-left text-[10px]"></i> Ver Socio
+            </button>
+          </div>
+
+          <!-- Quick Metrics Bar -->
+          <div class="grid grid-cols-3 gap-2 mt-3 pt-3 border-t border-slate-700/50 text-center">
+            <div class="bg-slate-900/60 p-2 rounded-xl">
+              <span id="metricCheckinsCount" class="block text-base font-black text-brand-300 font-mono">42</span>
+              <span class="text-[9px] text-slate-400 uppercase font-semibold">Ingresos Hoy</span>
+            </div>
+            <div class="bg-slate-900/60 p-2 rounded-xl">
+              <span id="metricPendingCount" class="block text-base font-black text-amber-400 font-mono">3</span>
+              <span class="text-[9px] text-slate-400 uppercase font-semibold">Por Validar</span>
+            </div>
+            <div class="bg-slate-900/60 p-2 rounded-xl">
+              <span id="metricActiveMembers" class="block text-base font-black text-emerald-400 font-mono">186</span>
+              <span class="text-[9px] text-slate-400 uppercase font-semibold">Socios Activos</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Admin Navigation Tabs: 1) Validador QR / 2) Panel de Aprobaciones -->
+        <div class="bg-dark-surface/90 border border-dark-border p-1 rounded-2xl flex items-center shadow-inner">
+          <button id="adminTabScannerBtn" onclick="switchAdminSubTab('scanner')" class="admin-tab-btn flex-1 py-2.5 px-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 bg-gradient-to-r from-brand-600 to-brand-500 text-white shadow-md">
+            <i class="fa-solid fa-qrcode"></i>
+            <span>Validador QR</span>
+          </button>
+          <button id="adminTabValidationBtn" onclick="switchAdminSubTab('validation')" class="admin-tab-btn flex-1 py-2.5 px-2 rounded-xl text-xs font-bold text-slate-400 hover:text-white transition-all flex items-center justify-center gap-1.5 relative">
+            <i class="fa-solid fa-file-circle-check"></i>
+            <span>Aprobar Pagos</span>
+            <span id="adminPendingBadge" class="w-4 h-4 rounded-full bg-amber-500 text-slate-950 font-black text-[9px] flex items-center justify-center ml-1">3</span>
+          </button>
+        </div>
+
+        <!-- ============================================== -->
+        <!-- ADMIN SUB-TAB 1: VALIDADOR QR DE INGRESO        -->
+        <!-- ============================================== -->
+        <div id="adminScannerSection" class="admin-subcontent space-y-4">
+          
+          <!-- Scanner Card -->
+          <div class="bg-dark-card border border-dark-border rounded-3xl p-4 shadow-xl space-y-3">
+            <div class="flex items-center justify-between">
+              <div>
+                <h4 class="text-xs font-black uppercase tracking-wider text-slate-200 flex items-center gap-1.5">
+                  <i class="fa-solid fa-camera text-brand-400"></i> Escáner de Acceso al Gimnasio
+                </h4>
+                <p class="text-[11px] text-slate-400">Apunta la cámara al QR del socio o prueba con los botones rápidos.</p>
+              </div>
+
+              <button id="toggleCameraBtn" onclick="toggleCameraScanner()" class="px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold text-slate-300 flex items-center gap-1.5 transition-all">
+                <i class="fa-solid fa-video text-brand-400" id="cameraToggleIcon"></i>
+                <span id="cameraToggleText">Cámara</span>
+              </button>
+            </div>
+
+            <!-- Camera Viewport Box -->
+            <div class="relative w-full aspect-square max-h-[260px] bg-black rounded-2xl overflow-hidden border-2 border-slate-700 flex flex-col items-center justify-center">
+              
+              <!-- Video target for html5-qrcode -->
+              <div id="qrReader" class="w-full h-full"></div>
+
+              <!-- Animated Scan Overlay / Reticle -->
+              <div id="scannerOverlay" class="absolute inset-0 pointer-events-none flex flex-col items-center justify-center p-6">
+                <!-- Glowing corner brackets -->
+                <div class="w-44 h-44 border-2 border-brand-400/50 rounded-2xl relative">
+                  <div class="absolute -top-1 -left-1 w-5 h-5 border-t-4 border-l-4 border-brand-400 rounded-tl"></div>
+                  <div class="absolute -top-1 -right-1 w-5 h-5 border-t-4 border-r-4 border-brand-400 rounded-tr"></div>
+                  <div class="absolute -bottom-1 -left-1 w-5 h-5 border-b-4 border-l-4 border-brand-400 rounded-bl"></div>
+                  <div class="absolute -bottom-1 -right-1 w-5 h-5 border-b-4 border-r-4 border-brand-400 rounded-br"></div>
+                  
+                  <!-- Animated Scanning Laser Bar -->
+                  <div class="scanner-laser"></div>
+                </div>
+                <p class="text-[10px] text-slate-400 font-mono mt-3 bg-black/60 px-3 py-1 rounded-full">Listo para escanear</p>
+              </div>
+            </div>
+
+            <!-- Manual DNI Input or Test Simulator -->
+            <div class="space-y-2 pt-1">
+              <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Simulador de Escaneo Inmediato:</p>
+              
+              <div class="grid grid-cols-3 gap-1.5 text-xs">
+                <button type="button" onclick="simulateAdminScan('71234567')" class="p-2 rounded-xl bg-emerald-500/10 border border-emerald-500/40 hover:bg-emerald-500/20 text-emerald-300 font-semibold text-center transition-all">
+                  <i class="fa-solid fa-circle-check text-xs block mb-0.5"></i>
+                  <span>Carlos (Activo)</span>
+                </button>
+
+                <button type="button" onclick="simulateAdminScan('74561234')" class="p-2 rounded-xl bg-amber-500/10 border border-amber-500/40 hover:bg-amber-500/20 text-amber-300 font-semibold text-center transition-all">
+                  <i class="fa-solid fa-triangle-exclamation text-xs block mb-0.5"></i>
+                  <span>Valeria (Aviso)</span>
+                </button>
+
+                <button type="button" onclick="simulateAdminScan('45892134')" class="p-2 rounded-xl bg-red-500/10 border border-red-500/40 hover:bg-red-500/20 text-red-300 font-semibold text-center transition-all">
+                  <i class="fa-solid fa-ban text-xs block mb-0.5"></i>
+                  <span>Roberto (Vencido)</span>
+                </button>
+              </div>
+
+              <!-- Manual DNI lookup form -->
+              <form id="manualLookupForm" onsubmit="handleManualLookup(event)" class="flex gap-2 pt-1">
+                <input type="text" id="manualDniInput" placeholder="O ingresa DNI de socio..." maxlength="8"
+                       class="flex-1 bg-dark-surface border border-slate-700 rounded-xl px-3 py-2 text-xs text-white font-mono placeholder-slate-500 focus:outline-none focus:border-brand-500">
+                <button type="submit" class="px-3 py-2 rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-bold text-xs flex items-center gap-1 shadow">
+                  <i class="fa-solid fa-magnifying-glass"></i>
+                  <span>Validar</span>
+                </button>
+              </form>
+            </div>
+
+          </div>
+
+          <!-- Scan Verification Result Box (Dynamic Popup Card) -->
+          <div id="scanResultBox" class="hidden transition-all duration-300">
+            <!-- Dynamically populated by JS: either Access Granted or Access Denied -->
+          </div>
+
+          <!-- Recent Check-ins Access Log -->
+          <div class="bg-dark-card border border-dark-border rounded-3xl p-4 shadow-xl space-y-3">
+            <div class="flex items-center justify-between">
+              <h4 class="text-xs font-black uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
+                <i class="fa-solid fa-list-check text-brand-400"></i> Registro de Ingresos Recientes
+              </h4>
+              <span class="text-[10px] text-slate-400">Hoy</span>
+            </div>
+
+            <div id="checkinsLogList" class="space-y-2 max-h-48 overflow-y-auto pr-1">
+              <!-- Dynamically populated entries -->
+            </div>
+          </div>
+
+        </div>
+
+        <!-- ============================================== -->
+        <!-- ADMIN SUB-TAB 2: PANEL DE VALIDACIÓN (PAGOS/DOCS) -->
+        <!-- ============================================== -->
+        <div id="adminValidationSection" class="admin-subcontent hidden space-y-3">
+          
+          <div class="flex items-center justify-between">
+            <div>
+              <h4 class="text-xs font-black uppercase tracking-wider text-slate-200 flex items-center gap-1.5">
+                <i class="fa-solid fa-clipboard-check text-brand-400"></i> Solicitudes por Aprobar
+              </h4>
+              <p class="text-[11px] text-slate-400">Valida transferencias bancarias y documentos adjuntos.</p>
+            </div>
+            <button onclick="resetDemoPendingDocs()" class="text-[10px] text-brand-400 hover:underline">Reiniciar lista</button>
+          </div>
+
+          <!-- Pending Validation Items List -->
+          <div id="pendingDocsList" class="space-y-3">
+            <!-- Dynamically populated cards with photos, approve/reject buttons -->
+          </div>
+
+          <!-- Approved Today History Accordion -->
+          <div class="bg-dark-card border border-dark-border rounded-3xl p-4 shadow-xl space-y-2">
+            <h5 class="text-xs font-bold text-slate-300 flex items-center gap-1.5">
+              <i class="fa-solid fa-clock-rotate-left text-emerald-400"></i> Aprobados Recientemente
+            </h5>
+            <div id="approvedDocsList" class="space-y-1.5 text-xs">
+              <!-- Populated by JS -->
+            </div>
+          </div>
+
+        </div>
+
+      </section>
+
+    </div>
+
+    <!-- Bottom Navigation Bar (For Quick Switching & Direct Links) -->
+    <footer class="bg-dark-surface/95 border-t border-slate-800/80 px-4 py-2 flex items-center justify-around z-40 backdrop-blur-md">
+      
+      <!-- Button: Vista Cliente -->
+      <button id="bottomNavClient" onclick="toggleViewMode('client')" class="flex flex-col items-center gap-0.5 text-brand-400 transition-all">
+        <i class="fa-solid fa-id-card text-base"></i>
+        <span class="text-[10px] font-bold">Mi Carnet</span>
+      </button>
+
+      <!-- Button: Vista Admin / Recepción -->
+      <button id="bottomNavAdmin" onclick="toggleViewMode('admin')" class="flex flex-col items-center gap-0.5 text-slate-400 hover:text-white transition-all relative">
+        <i class="fa-solid fa-shield-halved text-base"></i>
+        <span class="text-[10px] font-bold">Recepción</span>
+        <span id="footerPendingDot" class="absolute -top-0.5 right-2 w-2 h-2 rounded-full bg-amber-400"></span>
+      </button>
+
+      <!-- Button: Maps Ubicación -->
+      <a href="https://maps.app.goo.gl/7U4esPttLkjqku6f7" target="_blank" class="flex flex-col items-center gap-0.5 text-slate-400 hover:text-emerald-400 transition-all">
+        <i class="fa-solid fa-location-dot text-base"></i>
+        <span class="text-[10px] font-bold">Sede Maps</span>
+      </a>
+
+      <!-- Button: Redes Sociales -->
+      <button onclick="openSocialsModal()" class="flex flex-col items-center gap-0.5 text-slate-400 hover:text-pink-400 transition-all">
+        <i class="fa-solid fa-share-nodes text-base"></i>
+        <span class="text-[10px] font-bold">Redes</span>
+      </button>
+    </footer>
+
+  </main>
+
+  <!-- ============================================== -->
+  <!-- MODAL: DETALLE DE COMPROBANTE / PAGO (ZOOM)    -->
+  <!-- ============================================== -->
+  <div id="receiptModal" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-dark-card border border-dark-border w-full max-w-sm rounded-3xl p-5 shadow-2xl space-y-4 relative animate-fade-in">
+      <button onclick="closeReceiptModal()" class="absolute top-4 right-4 w-8 h-8 rounded-full bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+
+      <div class="flex items-center gap-2">
+        <span class="w-8 h-8 rounded-xl bg-brand-500/20 text-brand-400 flex items-center justify-center">
+          <i class="fa-solid fa-receipt"></i>
+        </span>
+        <div>
+          <h4 id="receiptModalTitle" class="text-sm font-bold text-white">Comprobante de Pago</h4>
+          <p id="receiptModalSubtitle" class="text-[11px] text-slate-400">Verificación de transferencia</p>
+        </div>
+      </div>
+
+      <!-- Receipt Preview Image Container -->
+      <div class="rounded-2xl overflow-hidden border border-slate-700 bg-slate-900 flex items-center justify-center p-2">
+        <img id="receiptModalImg" src="" alt="Comprobante" class="max-h-64 rounded-xl object-contain shadow">
+      </div>
+
+      <div class="space-y-1.5 text-xs bg-dark-surface p-3 rounded-2xl border border-slate-800">
+        <div class="flex justify-between">
+          <span class="text-slate-400">Socio:</span>
+          <span id="receiptModalMember" class="font-bold text-white">Valeria Ramos</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-slate-400">Concepto:</span>
+          <span id="receiptModalPlan" class="font-semibold text-brand-300">Renovación Mensual</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-slate-400">Monto:</span>
+          <span id="receiptModalAmount" class="font-bold font-mono text-emerald-400">S/ 150.00</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-slate-400">N° Operación:</span>
+          <span id="receiptModalOp" class="font-mono text-slate-300">OP-948271</span>
+        </div>
+      </div>
+
+      <!-- Approve / Reject inside modal -->
+      <div class="grid grid-cols-2 gap-2 pt-1" id="receiptModalActions">
+        <button id="modalRejectBtn" onclick="handleRejectCurrentModal()" class="py-2.5 px-3 rounded-xl bg-red-500/15 border border-red-500/30 text-red-400 font-bold text-xs hover:bg-red-500/25 transition-all">
+          Rechazar
+        </button>
+        <button id="modalApproveBtn" onclick="handleApproveCurrentModal()" class="py-2.5 px-3 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-black text-xs transition-all shadow-lg shadow-emerald-500/20">
+          Aprobar Pago
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================== -->
+  <!-- MODAL: RENOVAR MEMBRESÍA (CLIENTE)             -->
+  <!-- ============================================== -->
+  <div id="renewModal" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-dark-card border border-dark-border w-full max-w-sm rounded-3xl p-5 shadow-2xl space-y-4 relative">
+      <button onclick="closeRenewModal()" class="absolute top-4 right-4 w-8 h-8 rounded-full bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+
+      <div class="flex items-center gap-2">
+        <span class="w-8 h-8 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center">
+          <i class="fa-solid fa-wallet"></i>
+        </span>
+        <div>
+          <h4 class="text-sm font-bold text-white">Renovar Membresía</h4>
+          <p class="text-[11px] text-slate-400">Gimnasio Fuerza y Salud</p>
+        </div>
+      </div>
+
+      <div class="p-3 rounded-2xl bg-dark-surface border border-slate-800 space-y-2 text-xs">
+        <p class="text-slate-300 font-semibold">Cuentas para transferencia / Yape / Plin:</p>
+        <div class="flex items-center justify-between text-slate-400 font-mono">
+          <span>BCP Soles:</span>
+          <span class="text-white font-bold">475-92847291-0-12</span>
+        </div>
+        <div class="flex items-center justify-between text-slate-400 font-mono">
+          <span>Yape / Plin:</span>
+          <span class="text-white font-bold">969 123 456</span>
+        </div>
+        <p class="text-[10px] text-brand-300">Titular: Gimnasio Fuerza y Salud E.I.R.L.</p>
+      </div>
+
+      <form id="renewForm" onsubmit="submitRenewalForm(event)" class="space-y-3">
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Plan a Renovar:</label>
+          <select id="renewPlanSelect" class="w-full bg-dark-surface border border-slate-700 rounded-xl px-3 py-2 text-xs text-white">
+            <option value="Mensual - S/ 150">Mensual (30 días) - S/ 150.00</option>
+            <option value="Trimestral - S/ 380">Trimestral (90 días) - S/ 380.00</option>
+            <option value="Semestral - S/ 680">Semestral (180 días) - S/ 680.00</option>
+            <option value="Anual VIP - S/ 1,200">Anual VIP (365 días) - S/ 1,200.00</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Número de Operación:</label>
+          <input type="text" id="renewOpNumber" placeholder="Ej. 849201" required
+                 class="w-full bg-dark-surface border border-slate-700 rounded-xl px-3 py-2 text-xs text-white font-mono">
+        </div>
+
+        <button type="submit" class="w-full py-3 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 font-black text-xs uppercase tracking-wider shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/40 transition-all">
+          Enviar a Recepción para Validación
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ============================================== -->
+  <!-- MODAL: REDES SOCIALES                          -->
+  <!-- ============================================== -->
+  <div id="socialsModal" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-dark-card border border-dark-border w-full max-w-sm rounded-3xl p-5 shadow-2xl space-y-4 relative">
+      <button onclick="closeSocialsModal()" class="absolute top-4 right-4 w-8 h-8 rounded-full bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+
+      <div class="text-center">
+        <img src="assets/logo.png" alt="Logo" class="w-16 h-16 object-contain mx-auto mb-2">
+        <h4 class="text-base font-bold text-white">Gimnasio Fuerza y Salud</h4>
+        <p class="text-xs text-brand-400">Comunidad Fitness Piura</p>
+      </div>
+
+      <div class="space-y-2.5">
+        <a href="https://maps.app.goo.gl/7U4esPttLkjqku6f7" target="_blank" class="p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 hover:bg-emerald-500/20 text-white flex items-center justify-between transition-all">
+          <div class="flex items-center gap-3">
+            <i class="fa-solid fa-map-location-dot text-emerald-400 text-lg"></i>
+            <div>
+              <p class="text-xs font-bold">Ubicación en Google Maps</p>
+              <p class="text-[10px] text-slate-400">Abrir GPS y cómo llegar</p>
+            </div>
+          </div>
+          <i class="fa-solid fa-arrow-up-right-from-square text-xs text-slate-400"></i>
+        </a>
+
+        <a href="https://www.instagram.com/gimnasiofys/" target="_blank" class="p-3 rounded-2xl bg-pink-500/10 border border-pink-500/30 hover:bg-pink-500/20 text-white flex items-center justify-between transition-all">
+          <div class="flex items-center gap-3">
+            <i class="fa-brands fa-instagram text-pink-400 text-lg"></i>
+            <div>
+              <p class="text-xs font-bold">Instagram Oficial</p>
+              <p class="text-[10px] text-slate-400">@gimnasiofys • Rutinas y avisos</p>
+            </div>
+          </div>
+          <i class="fa-solid fa-arrow-up-right-from-square text-xs text-slate-400"></i>
+        </a>
+
+        <a href="https://www.tiktok.com/@gymfuerzaysaludpiura?lang=es" target="_blank" class="p-3 rounded-2xl bg-cyan-500/10 border border-cyan-500/30 hover:bg-cyan-500/20 text-white flex items-center justify-between transition-all">
+          <div class="flex items-center gap-3">
+            <i class="fa-brands fa-tiktok text-cyan-300 text-lg"></i>
+            <div>
+              <p class="text-xs font-bold">TikTok Piura</p>
+              <p class="text-[10px] text-slate-400">@gymfuerzaysaludpiura • Retos y videos</p>
+            </div>
+          </div>
+          <i class="fa-solid fa-arrow-up-right-from-square text-xs text-slate-400"></i>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toastContainer" class="fixed top-5 left-1/2 -translate-x-1/2 z-50 flex flex-col gap-2 pointer-events-none w-full max-w-xs px-4"></div>
+
+  <!-- App Script -->
+  <script src="app.js"></script>
+</body>
+</html>

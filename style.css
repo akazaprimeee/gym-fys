@@ -1,0 +1,149 @@
+/* Gimnasio Fuerza y Salud - Custom Stylesheet */
+
+@keyframes laserScan {
+  0% {
+    top: 5%;
+    opacity: 0.8;
+  }
+  50% {
+    top: 90%;
+    opacity: 1;
+  }
+  100% {
+    top: 5%;
+    opacity: 0.8;
+  }
+}
+
+@keyframes hologramShine {
+  0% {
+    transform: translate(-100%, -100%) rotate(45deg);
+  }
+  50% {
+    transform: translate(100%, 100%) rotate(45deg);
+  }
+  100% {
+    transform: translate(-100%, -100%) rotate(45deg);
+  }
+}
+
+@keyframes pulseGlow {
+  0%, 100% {
+    box-shadow: 0 0 15px rgba(20, 136, 240, 0.4), 0 0 30px rgba(0, 210, 255, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 25px rgba(20, 136, 240, 0.7), 0 0 50px rgba(0, 210, 255, 0.4);
+  }
+}
+
+/* Scanner laser bar */
+.scanner-laser {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, #38bdf8, #00d2ff, #38bdf8, transparent);
+  box-shadow: 0 0 12px #38bdf8, 0 0 20px #00d2ff;
+  animation: laserScan 2.4s ease-in-out infinite;
+}
+
+/* Carnet Holographic effect */
+.carnet-card {
+  position: relative;
+  background-size: cover;
+  backdrop-filter: blur(8px);
+}
+
+.carnet-hologram {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.03) 0%,
+    rgba(56, 189, 248, 0.08) 30%,
+    rgba(234, 179, 8, 0.05) 50%,
+    rgba(168, 85, 247, 0.06) 70%,
+    rgba(255, 255, 255, 0.02) 100%
+  );
+  opacity: 0.7;
+}
+
+.carnet-card::after {
+  content: '';
+  position: absolute;
+  top: -100%;
+  left: -100%;
+  width: 300%;
+  height: 300%;
+  background: radial-gradient(circle, rgba(56, 189, 248, 0.12) 0%, transparent 65%);
+  animation: hologramShine 8s linear infinite;
+  pointer-events-none;
+}
+
+/* Membership Card Status Variants */
+.membership-card.status-active {
+  background: linear-gradient(135deg, #09261a 0%, #0d1a2d 100%);
+  border-color: rgba(16, 185, 129, 0.4);
+}
+
+.membership-card.status-warning {
+  background: linear-gradient(135deg, #2b1f06 0%, #162036 100%);
+  border-color: rgba(245, 158, 11, 0.4);
+}
+
+.membership-card.status-expired {
+  background: linear-gradient(135deg, #2d0e14 0%, #162036 100%);
+  border-color: rgba(239, 68, 68, 0.4);
+}
+
+/* Phone Mockup Frame toggle styling */
+.phone-frame.fullscreen {
+  max-width: 100% !important;
+  min-height: 100vh !important;
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  ring: 0 !important;
+}
+
+.phone-frame.fullscreen #phoneNotch {
+  display: none !important;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.6);
+}
+
+::-webkit-scrollbar-thumb {
+  background: #1e293b;
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #334155;
+}
+
+/* Smooth fade in */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.97) translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.25s ease-out forwards;
+}
